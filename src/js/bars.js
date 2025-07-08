@@ -15,6 +15,7 @@ export function drawBars({ barsEl, chart }, data, style) {
 		const h = (value / 100) * height;
 		bar.style.setProperty('--bar-height', `${h}px`);
 		bar.style.setProperty('--bar-width', `${barWidth}px`);
+		bar.style.width = `${barWidth}px`;
 		if (style === 'smooth') {
 			bar.style.height = `${h}px`;
 		}
