@@ -1,0 +1,43 @@
+/* Vertical dashed lines for min/max/avg */
+.threshold {
+	position: absolute;
+	top: 0;
+	bottom: -20px;
+	width: 0;
+	border-left: 2px dashed #fff;
+	cursor: ew-resize;
+}
+
+/* Value labels below the lines */
+.value-label {
+	position: absolute;
+	bottom: -50px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: #fff;
+	font-size: 12px;
+	pointer-events: none;
+}
+
+/* White circle at line ends */
+.threshold::before {
+	content: '';
+	position: absolute;
+	left: 50%;
+	width: 12px;
+	height: 12px;
+	background: #fff;
+	border-radius: 50%;
+	transform: translateX(-50%);
+}
+
+.threshold.min::before,
+.threshold.max::before {
+	top: 0;
+	transform: translate(-50%, -50%);
+}
+
+.threshold.avg::before {
+	bottom: 0;
+	transform: translate(-50%, 50%);
+}
