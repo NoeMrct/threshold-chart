@@ -1,0 +1,14 @@
+/* Spike style: dark gray triangles */
+.bars.spikes .bar {
+	width: 0;
+	border-left:  calc(var(--bar-width)/2) solid transparent;
+	border-right: calc(var(--bar-width)/2) solid transparent;
+	border-bottom: var(--bar-height) solid #444;
+}
+
+/* Smooth style: dark gray rounded-top bars */
+.bars.smooth .bar {
+	background: #444;
+	border-top-left-radius: 50%;
+	border-top-right-radius: 50%;
+}
