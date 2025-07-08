@@ -1,4 +1,3 @@
-````markdown
 # threshold-chart
 
 A lightweight **Vanilla JS** and **CSS** component for rendering a temperature chart with three draggable thresholds: min, max, and average.
@@ -21,7 +20,7 @@ A lightweight **Vanilla JS** and **CSS** component for rendering a temperature c
 
 ```bash
 npm install threshold-chart
-````
+```
 
 ---
 
