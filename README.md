@@ -131,12 +131,6 @@ interface ThresholdChartAPI {
    npm run build
    ```
 
-4. **Test** (optional)
-
-   ```bash
-   npm test
-   ```
-
 ---
 
 ## 🤝 Contributing
