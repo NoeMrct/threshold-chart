@@ -1,0 +1,41 @@
+{
+  "name": "threshold-chart",
+  "version": "1.0.0",
+  "description": "Composant draggable de seuils de température (min/max/moyenne)",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "browser": "dist/index.umd.js",
+  "unpkg": "dist/index.umd.js",
+  "style": "dist/style.css",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-username>/threshold-chart.git"
+  },
+  "bugs": {
+    "url": "https://github.com/<your-username>/threshold-chart/issues"
+  },
+  "homepage": "https://github.com/<your-username>/threshold-chart#readme",
+  "keywords": [
+    "temperature",
+    "chart",
+    "threshold",
+    "draggable",
+    "vanilla-js",
+    "css"
+  ],
+  "author": "Noé Mercourt mercourt.noe@outlook.fr",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "rollup": "^2.79.2",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-terser": "^7.0.2"
+  }
+}
