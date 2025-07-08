@@ -115,7 +115,7 @@ interface ThresholdChartAPI {
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/<your-username>/threshold-chart.git
+   git clone https://github.com/NoeMrct/threshold-chart.git
    cd threshold-chart
    ```
 
