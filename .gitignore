@@ -1,6 +1,9 @@
 # Node modules
 /node_modules/
 
+# Fichier de démonstration
+/demo.html
+
 # Dossiers de build
 /dist/
 /build/
