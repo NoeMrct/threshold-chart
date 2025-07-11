@@ -1,21 +1,31 @@
-// Make an element draggable horizontally within the chart
-export function makeDraggable(el, chart, onChange) {
+export const makeDraggable = (el, chart, onChange) => {
 	let isDragging = false;
 
-	el.addEventListener('mousedown', e => {
-		e.preventDefault();
+	const getPct = (clientX) => {
+		const { left, width } = chart.getBoundingClientRect();
+		let pct = ((clientX - left) / width) * 100;
+		return Math.max(0, Math.min(100, pct));
+	};
+
+	const start = (x) => {
 		isDragging = true;
-	});
-
-	document.addEventListener('mousemove', e => {
+		onChange(getPct(x));
+	};
+	const move = (x) => {
 		if (!isDragging) return;
-		const rect = chart.getBoundingClientRect();
-		let pct = ((e.clientX - rect.left) / rect.width) * 100;
-		pct = Math.max(0, Math.min(100, pct));
-		onChange(pct);
-	});
-
-	document.addEventListener('mouseup', () => {
+		onChange(getPct(x));
+	};
+	const end = () => {
 		isDragging = false;
-	});
-}
+	};
+
+	// Mouse events
+	el.addEventListener('mousedown', (e) => { e.preventDefault(); start(e.clientX); });
+	document.addEventListener('mousemove', (e) => move(e.clientX));
+	document.addEventListener('mouseup', () => end());
+
+	// Touch events
+	el.addEventListener('touchstart', (e) => { e.preventDefault(); start(e.touches[0].clientX); });
+	document.addEventListener('touchmove', (e) => { e.preventDefault(); move(e.touches[0].clientX); });
+	document.addEventListener('touchend', () => end());
+};

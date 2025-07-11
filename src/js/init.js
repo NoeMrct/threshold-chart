@@ -1,21 +1,22 @@
-// Build base DOM and grab references
-export function initChart(containerSelector) {
-	const chart = document.querySelector(containerSelector);
-	if (!chart) throw new Error(`Container not found: ${containerSelector}`);
+export const initChart = (selector) => {
+	const chartEl = document.querySelector(selector);
+	if (!chartEl) throw new Error(`Container not found: ${selector}`);
 
-	chart.classList.add('chart-container');
-	chart.innerHTML = `
-		<div class="bars"></div>
-		<div class="threshold min"><div class="value-label"></div></div>
-		<div class="threshold max"><div class="value-label"></div></div>
-		<div class="threshold avg"><div class="value-label"></div></div>
-	`;
+	// Ensure responsive container
+	chartEl.classList.add('chart-container');
+	chartEl.style.position = 'relative';
+
+	chartEl.innerHTML =
+		'<div class="bars"></div>' +
+		'<div class="threshold min"><div class="value-label"></div></div>' +
+		'<div class="threshold max"><div class="value-label"></div></div>' +
+		'<div class="threshold avg"><div class="value-label"></div></div>';
 
 	return {
-		chart,
-		barsEl: chart.querySelector('.bars'),
-		minLine: chart.querySelector('.threshold.min'),
-		maxLine: chart.querySelector('.threshold.max'),
-		avgLine: chart.querySelector('.threshold.avg'),
+		chart:   chartEl,
+		barsEl:  chartEl.querySelector('.bars'),
+		minLine: chartEl.querySelector('.threshold.min'),
+		maxLine: chartEl.querySelector('.threshold.max'),
+		avgLine: chartEl.querySelector('.threshold.avg')
 	};
-}
+};

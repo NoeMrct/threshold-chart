@@ -1,18 +1,15 @@
 # threshold-chart
 
-A lightweight **Vanilla JS** and **CSS** component for rendering a temperature chart with three draggable thresholds: min, max, and average.
+A lightweight **Vanilla JS** and **CSS** component for rendering an interactive bar chart with three draggable thresholds: **min**, **max**, and **average**.
 
 ---
 
 ## 🚀 Features
 
-- Draggable **min** and **max** thresholds  
-- Optional **average** threshold  
-- Two rendering styles:  
-  - **Spikes** (triangles)  
-  - **Smooth** (rounded-top bars)  
-- Zero external dependencies (pure JS/CSS)  
-- Distributed as ES Module, CommonJS, and UMD (for CDN)
+* Draggable **min** and **max** thresholds
+* Optional **average** threshold
+* Pure **Vanilla JS** and **CSS** with zero external dependencies
+* Distributed as **ES Module**, **CommonJS**, and **UMD** (for CDN usage)
 
 ---
 
@@ -28,7 +25,7 @@ npm install threshold-chart
 
 ### 1. With a bundler (ESM / CommonJS)
 
-1. **Import** the CSS and function:
+1. **Import** the CSS and module:
 
    ```js
    import 'threshold-chart/dist/style.css';
@@ -51,7 +48,9 @@ npm install threshold-chart
      initialMin: 10,
      initialMax: 90,
      showAverage: true,
-     style: 'smooth' // or 'spikes'
+     minLabelPosition: 'bottom',
+     maxLabelPosition: 'bottom',
+     avgLabelPosition: 'top'
    });
    ```
 
@@ -72,7 +71,9 @@ npm install threshold-chart
     initialMin: 10,
     initialMax: 90,
     showAverage: true,
-    style: 'spikes'
+    minLabelPosition: 'bottom',
+    maxLabelPosition: 'bottom',
+    avgLabelPosition: 'top'
   });
 </script>
 ```
@@ -81,13 +82,15 @@ npm install threshold-chart
 
 ## ⚙️ Options
 
-| Option        | Type                     | Default    | Description                                                 |
-| ------------- | ------------------------ | ---------- | ----------------------------------------------------------- |
-| `data`        | `number[]`               | `[]`       | Array of values (0–100) to generate bar heights.            |
-| `initialMin`  | `number`                 | `20`       | Initial position of the **min** threshold (as % of width).  |
-| `initialMax`  | `number`                 | `80`       | Initial position of the **max** threshold (as % of width).  |
-| `showAverage` | `boolean`                | `false`    | Show the **average** threshold `(min+max)/2` when `true`.   |
-| `style`       | `'spikes'` \| `'smooth'` | `'spikes'` | Choose the rendering style: triangle spikes or smooth bars. |
+| Option             | Type       | Default    | Description                                                      |
+| ------------------ | ---------- | ---------- | ---------------------------------------------------------------- |
+| `data`             | `number[]` | `[]`       | Array of values (0–100) to generate bar heights.                 |
+| `initialMin`       | `number`   | `20`       | Initial **min** threshold position as percentage of chart width. |
+| `initialMax`       | `number`   | `80`       | Initial **max** threshold position as percentage of chart width. |
+| `showAverage`      | `boolean`  | `false`    | Whether to display the **average** threshold.                    |
+| `minLabelPosition` | `string`   | `'bottom'` | Position of the **min** label: `'top'` or `'bottom'`.            |
+| `maxLabelPosition` | `string`   | `'bottom'` | Position of the **max** label: `'top'` or `'bottom'`.            |
+| `avgLabelPosition` | `string`   | `'top'`    | Position of the **average** label: `'top'` or `'bottom'`.        |
 
 ---
 
@@ -103,8 +106,12 @@ interface ThresholdChartAPI {
   setMax(v: number): void;
   /** Enable or disable the average threshold */
   toggleAverage(show: boolean): void;
-  /** Switch rendering style: 'spikes' or 'smooth' */
-  setStyle(style: 'spikes' | 'smooth'): void;
+  /** Update position of the min label: `'top'` or `'bottom'` */
+  setMinLabelPos(pos: 'top' | 'bottom'): void;
+  /** Update position of the max label: `'top'` or `'bottom'` */
+  setMaxLabelPos(pos: 'top' | 'bottom'): void;
+  /** Update position of the average label: `'top'` or `'bottom'` */
+  setAvgLabelPos(pos: 'top' | 'bottom'): void;
 }
 ```
 

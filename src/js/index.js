@@ -1,71 +1,71 @@
-import '../css/index.css';
-import { initChart }        from './init.js';
-import { drawBars }         from './bars.js';
+import { drawBars } from './bars.js';
+import { makeDraggable } from './drag.js';
+import { initChart } from './init.js';
 import { updateThresholds } from './thresholds.js';
-import { makeDraggable }    from './drag.js';
 
-export function createThresholdChart(selector, {
-	data = [],
-	initialMin = 20,
-	initialMax = 80,
-	showAverage = false,
-	style = 'spikes',
-	minLabelPosition = 'bottom',  // 'top' or 'bottom'
-	maxLabelPosition = 'bottom',  // 'top' or 'bottom'
-	avgLabelPosition = 'top'      // 'top' or 'bottom'
-} = {}) {
-	const elems = initChart(selector);
-	let min = initialMin, max = initialMax;
+export const createThresholdChart = (selector, options = {}) => {
+	let {
+		data = [],
+		initialMin = 20,
+		initialMax = 80,
+		showAverage = false,
+		minLabelPosition = 'bottom',
+		maxLabelPosition = 'bottom',
+		avgLabelPosition = 'top'
+	} = options;
 
-	// apply label-position classes
-	elems.minLine.querySelector('.value-label')
-		.classList.add(`label-${minLabelPosition}`);
-	elems.maxLine.querySelector('.value-label')
-		.classList.add(`label-${maxLabelPosition}`);
-	elems.avgLine.querySelector('.value-label')
-		.classList.add(`label-${avgLabelPosition}`);
+	const oElems = initChart(selector);
 
-	// draggable
-	const minSpacing = 2; // minimum spacing between min and max
+	const applyPositions = (lineEl, labelPos) => {
+		const label = lineEl.querySelector('.value-label');
+		if (label) {
+			label.classList.toggle('label-top', labelPos === 'top');
+			label.classList.toggle('label-bottom', labelPos === 'bottom');
+		}
+		lineEl.classList.toggle('handle-top', labelPos === 'bottom');
+		lineEl.classList.toggle('handle-bottom', labelPos === 'top');
+	};
 
-	makeDraggable(elems.minLine, elems.chart, v => {
-		min = Math.min(v, max - minSpacing);
+	applyPositions(oElems.minLine, minLabelPosition);
+	applyPositions(oElems.maxLine, maxLabelPosition);
+	applyPositions(oElems.avgLine, avgLabelPosition);
+
+	const spacing = 2;
+	makeDraggable(oElems.minLine, oElems.chart, (pct) => {
+		initialMin = Math.min(pct, initialMax - spacing);
 		render();
+		options.onMinChange && options.onMinChange(initialMin);
+		options.onThresholdChange && options.onThresholdChange({ min: initialMin, max: initialMax, avg: (initialMin + initialMax) / 2 });
+	});
+	makeDraggable(oElems.maxLine, oElems.chart, (pct) => {
+		initialMax = Math.max(pct, initialMin + spacing);
+		render();
+		options.onMaxChange && options.onMaxChange(initialMax);
+		options.onThresholdChange && options.onThresholdChange({ min: initialMin, max: initialMax, avg: (initialMin + initialMax) / 2 });
 	});
 
-	makeDraggable(elems.maxLine, elems.chart, v => {
-		max = Math.max(v, min + minSpacing);
-		render();
-	});
+	// Re-render on resize for responsiveness
+	let resizeTimeout;
+	const onResize = () => {
+		clearTimeout(resizeTimeout);
+		resizeTimeout = setTimeout(render, 100);
+	};
+	window.addEventListener('resize', onResize);
 
+	const render = () => {
+		drawBars(oElems, data);
+		updateThresholds(oElems, initialMin, initialMax, showAverage);
+	};
 
-	// render
-	function render() {
-		drawBars(elems, data, style);
-		updateThresholds(elems, min, max, showAverage);
-	}
 	render();
 
 	return {
-		setMin(v)        { min = v; render(); },
-		setMax(v)        { max = v; render(); },
-		toggleAverage(b) { showAverage = b; render(); },
-		setStyle(s)      { style = s; render(); },
-		// new setters:
-		setMinLabelPos(pos) {   // 'top' or 'bottom'
-			const lbl = elems.minLine.querySelector('.value-label');
-			lbl.classList.toggle('label-top', pos==='top');
-			lbl.classList.toggle('label-bottom', pos==='bottom');
-		},
-		setMaxLabelPos(pos) {
-			const lbl = elems.maxLine.querySelector('.value-label');
-			lbl.classList.toggle('label-top', pos==='top');
-			lbl.classList.toggle('label-bottom', pos==='bottom');
-		},
-		setAvgLabelPos(pos) {
-			const lbl = elems.avgLine.querySelector('.value-label');
-			lbl.classList.toggle('label-top', pos==='top');
-			lbl.classList.toggle('label-bottom', pos==='bottom');
-		}
+		setMin: (v) => { initialMin = v; render(); },
+		setMax: (v) => { initialMax = v; render(); },
+		toggleAverage: (b) => { showAverage = b; render(); },
+		setMinLabelPos: (p) => applyPositions(oElems.minLine, p),
+		setMaxLabelPos: (p) => applyPositions(oElems.maxLine, p),
+		setAvgLabelPos: (p) => applyPositions(oElems.avgLine, p),
+		destroy: () => { window.removeEventListener('resize', onResize); }
 	};
-}
+};
