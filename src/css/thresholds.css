@@ -1,89 +1,111 @@
 .threshold {
-	/* larger hit area, centered on threshold position */
 	position: absolute;
 	top: -20px;
 	bottom: -20px;
-	left: 0;               /* x-position set via JS */
+	left: 0;
 	width: 30px;
 	transform: translateX(-50%);
 	cursor: ew-resize;
 	pointer-events: auto;
+	z-index: 9999;
 }
 
-/* dashed line centered in hit area */
+/* Dashed line centered in hit area */
 .threshold::after {
 	content: "";
 	position: absolute;
 	left: 50%;
 	top: 0;
 	bottom: 0;
-	width: 2px;
+	width: 1px;
 	border-left: 2px dashed #fff;
 	transform: translateX(-50%);
 }
 
-/* white dot, default centered */
+/* White dot default center */
 .threshold::before {
 	content: "";
 	position: absolute;
 	left: 50%;
 	top: 50%;
-	width: 12px;
-	height: 12px;
-	background: #fff;
+	width: 13px;
+	height: 13px;
+	background-color: #fff;
 	border-radius: 50%;
 	transform: translate(-50%, -50%);
 }
 
-/* dot at bottom for min/max */
+/* Positioning dot for min/max */
 .threshold.min::before,
 .threshold.max::before {
-	bottom: 0;
 	top: auto;
+	bottom: 0;
 	transform: translate(-50%, 50%);
 }
 
-/* dot at top for average */
+/* Positioning dot for average */
 .threshold.avg::before {
 	top: 0;
 	bottom: auto;
 	transform: translate(-50%, -50%);
 }
 
-/* label, perfectly centered horizontally */
+/* Value label base */
 .value-label {
 	position: absolute;
 	left: 50%;
 	white-space: nowrap;
 	pointer-events: none;
-	font-size: 12px;
+	font-size: 22px;
 	color: #fff;
 	transform: translateX(-50%);
 }
 
-/* default label below for min/max */
+/* Label below for min/max */
 .threshold.min .value-label,
 .threshold.max .value-label {
 	top: 100%;
-	transform: translate(-50%, 12px);
+	transform: translate(-50%, 40px);
 }
 
-/* default label above for average */
+/* Label above for average */
 .threshold.avg .value-label {
 	bottom: 100%;
-	transform: translate(-50%, -12px);
+	transform: translate(-50%, 10px);
 }
 
-/* override label position to top */
+/* Manual override positions */
 .value-label.label-top {
 	bottom: 100%;
 	top: auto;
 	transform: translate(-50%, -12px);
 }
 
-/* override label position to bottom */
 .value-label.label-bottom {
 	top: 100%;
 	bottom: auto;
 	transform: translate(-50%, 12px);
+}
+
+/* Handle variants */
+.threshold.handle-top::before {
+	top: 0;
+	bottom: auto;
+	transform: translate(-50%, -50%);
+}
+
+.threshold.handle-top::after {
+	top: 0;
+	height: 170px;
+}
+
+.threshold.handle-bottom::before {
+	top: auto;
+	bottom: -50px;
+	transform: translate(-50%, 50%);
+}
+
+.threshold.handle-bottom::after {
+	top: 43%;
+	height: 120px;
 }
