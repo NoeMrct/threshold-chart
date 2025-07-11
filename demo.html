@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Threshold Chart Demo</title>
+  <style>
+    html, body { margin:0; height:100% }
+    body {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#111;
+    }
+    #demo {
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  <link rel="stylesheet" href="./dist/style.css">
+</head>
+<body>
+  <div id="demo"></div>
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const chart = ThresholdChart.createThresholdChart('#demo', {
+      data: Array.from({ length: 60 }, () => Math.random() * 50),
+      initialMin: 30,
+      initialMax: 70,
+      showAverage: true,
+      minLabelPosition: 'bottom',
+      maxLabelPosition: 'bottom',
+      avgLabelPosition: 'top'
+    });
+  </script>
+</body>
+</html>
