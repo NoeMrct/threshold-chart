@@ -17,7 +17,7 @@ export default {
     commonjs(),
     postcss({
       extract: path.resolve(__dirname, 'dist/style.css'),
-      plugins: [ postcssImport() ],   // ← this inlines @import rules
+      plugins: [ postcssImport() ],
       minimize: true,
       sourceMap: true
     }),
