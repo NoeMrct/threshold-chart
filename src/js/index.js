@@ -1,3 +1,4 @@
+import '../css/index.css';
 import { drawBars } from './bars.js';
 import { makeDraggable } from './drag.js';
 import { initChart } from './init.js';
@@ -44,6 +45,24 @@ export const createThresholdChart = (selector, options = {}) => {
 		options.onThresholdChange && options.onThresholdChange({ min: initialMin, max: initialMax, avg: (initialMin + initialMax) / 2 });
 	});
 
+	function highlightBars(barsEl, minPct, maxPct) {
+		const bars  = Array.from(barsEl.children);
+		const count = bars.length;
+		// on ne dépasse pas la barre max grâce au floor()
+		const startIdx = Math.floor((minPct / 100) * count);
+		const   endIdx = Math.floor((maxPct / 100) * count);
+
+		bars.forEach((bar, i) => {
+			if (i >= startIdx && i <= endIdx) {
+				bar.classList.add('bar--in-range');
+				bar.classList.remove('bar--out-of-range');
+			} else {
+				bar.classList.add('bar--out-of-range');
+				bar.classList.remove('bar--in-range');
+			}
+		});
+	}
+
 	// Re-render on resize for responsiveness
 	let resizeTimeout;
 	const onResize = () => {
@@ -55,6 +74,7 @@ export const createThresholdChart = (selector, options = {}) => {
 	const render = () => {
 		drawBars(oElems, data);
 		updateThresholds(oElems, initialMin, initialMax, showAverage);
+		highlightBars(oElems.barsEl, initialMin, initialMax);
 	};
 
 	render();
