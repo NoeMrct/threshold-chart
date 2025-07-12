@@ -1,16 +1,21 @@
+/*==================================================
+			Draggable Threshold Handle
+==================================================*/
 .threshold {
 	position: absolute;
-	top: -20px;
-	bottom: -20px;
+	top: -20px;        /* extend drag area above */
+	bottom: -20px;     /* extend drag area below */
 	left: 0;
-	width: 30px;
-	cursor: ew-resize;
+	width: 30px;       /* clickable width */
+	cursor: ew-resize; /* horizontal resize cursor */
 	pointer-events: auto;
 	transform: translateX(-50%);
-	z-index: 9999;
+	z-index: 9999;     /* always on top */
 }
 
-/* Dashed line centered in hit area */
+/*==================================================
+		Vertical Dashed Line (Connector)
+==================================================*/
 .threshold::after {
 	content: "";
 	position: absolute;
@@ -22,7 +27,9 @@
 	transform: translateX(-50%);
 }
 
-/* White dot default center */
+/*==================================================
+			Circular Handle “Dot” (Knob)
+==================================================*/
 .threshold::before {
 	content: "";
 	position: absolute;
@@ -35,22 +42,9 @@
 	transform: translate(-50%, -50%);
 }
 
-/* Positioning dot for min/max */
-.threshold.min::before,
-.threshold.max::before {
-	top: auto;
-	bottom: 0;
-	transform: translate(-50%, 50%);
-}
-
-/* Positioning dot for average */
-.threshold.avg::before {
-	top: 0;
-	bottom: auto;
-	transform: translate(-50%, -50%);
-}
-
-/* Value label base */
+/*==================================================
+		Generic Value Label Styling
+==================================================*/
 .value-label {
 	position: absolute;
 	left: 50%;
@@ -61,51 +55,138 @@
 	transform: translateX(-50%);
 }
 
-/* Label below for min/max */
-.threshold.min .value-label,
-.threshold.max .value-label {
-	top: 100%;
-	transform: translate(-50%, 40px);
-}
-
-/* Label above for average */
+/*==================================================
+		Default Label Position Modifiers
+==================================================*/
+/* Average line: label above the dot */
 .threshold.avg .value-label {
 	bottom: 100%;
 	transform: translate(-50%, 10px);
 }
 
-/* Manual override positions */
+/* Explicit “label-top”: always above */
 .value-label.label-top {
 	bottom: 100%;
 	top: auto;
 	transform: translate(-50%, -12px);
 }
 
+/* Explicit “label-bottom”: always below */
 .value-label.label-bottom {
 	top: 100%;
 	bottom: auto;
 	transform: translate(-50%, 12px);
 }
 
-/* Handle variants */
-.threshold.handle-top::before {
+/* Min & Max: default label well below */
+.threshold.min .value-label,
+.threshold.max .value-label {
+	top: 100%;
+	transform: translate(-50%, 40px);
+}
+
+/*==================================================
+		Position Handle “Dot” for Min & Max
+==================================================*/
+/* Place the dot at the bottom for min & max */
+.threshold.min::before,
+.threshold.max::before {
+	top: auto;
+	bottom: 0;
+	transform: translate(-50%, 50%);
+}
+
+/*==================================================
+	Overrides for Min/Max when Handle is Top
+==================================================*/
+.threshold.max.handle-top,
+.threshold.min.handle-top {
+	/* dot moves to top */
+	&::before {
+		top: 0;
+		bottom: auto;
+		transform: translate(-50%, -50%);
+	}
+	/* dashed line fixed height */
+	&::after {
+		height: 170px;
+		top: 0;
+	}
+	/* label moved below */
+	& .value-label {
+		top: 100%;
+		transform: translate(-50%, 40px);
+	}
+}
+
+/*==================================================
+	Overrides for Min/Max when Handle is Bottom
+==================================================*/
+.threshold.max.handle-bottom,
+.threshold.min.handle-bottom {
+	/* dot moves below with margin */
+	&::before {
+		top: auto;
+		bottom: -50px;
+		transform: translate(-50%, 50%);
+	}
+	/* dashed line partial height */
+	&::after {
+		height: 145px;
+		top: 25%;
+	}
+	/* label placed just above */
+	& .value-label {
+		top: 0%;
+		transform: translate(-50%, -10px);
+	}
+}
+
+/*==================================================
+	Overrides for Average when Handle is Top
+==================================================*/
+.threshold.avg::before {
+	/* default avg dot at top */
 	top: 0;
 	bottom: auto;
 	transform: translate(-50%, -50%);
 }
 
-.threshold.handle-top::after {
-	top: 0;
-	height: 170px;
+.threshold.avg.handle-top {
+	/* dot at top */
+	&::before {
+		top: 0;
+		bottom: auto;
+		transform: translate(-50%, -50%);
+	}
+	/* dashed line shorter */
+	&::after {
+		height: 140px;
+	}
+	/* label shifted downward */
+	& .value-label {
+		transform: translate(-50%, 38px);
+	}
 }
 
-.threshold.handle-bottom::before {
-	top: auto;
-	bottom: -50px;
-	transform: translate(-50%, 50%);
-}
-
-.threshold.handle-bottom::after {
-	top: 43%;
-	height: 120px;
+/*==================================================
+	Overrides for Average when Handle is Bottom
+==================================================*/
+.threshold.avg.handle-bottom {
+	/* dot moves below */
+	&::before {
+		top: auto;
+		bottom: -50px;
+		transform: translate(-50%, 50%);
+	}
+	/* dashed line partial height */
+	&::after {
+		height: 120px;
+		top: 43%;
+	}
+	/* label placed above */
+	& .value-label {
+		bottom: 100%;
+		transform: translate(-50%, 10px);
+	}
 }
