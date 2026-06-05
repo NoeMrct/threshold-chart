@@ -1,31 +1,22 @@
-.bars.spikes .bar {
-	width: var(--bar-width);
-	height: var(--bar-height);
-	background-color: #444;
-	flex: 0 0 auto;
-}
-
-/* Wrapper for bars, aligned at bottom */
+/* Wrapper for the bars, anchored to the bottom of the container */
 .bars {
 	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 100%;
+	inset: 0;
 	display: flex;
 	align-items: flex-end;
 }
 
-/* Individual bar spacing */
-.bar {
-	margin: 0 2px;
+/* Individual bar geometry (driven by inline custom properties) */
+.bars.spikes .bar {
+	width: var(--bar-width);
+	height: var(--bar-height);
+	background-color: var(--tc-bar-color);
+	flex: 0 0 auto;
+	transition: opacity var(--tc-transition);
 }
 
-.bars .bar--in-range {
-  opacity: 1;
-  transition: opacity 0.3s;
-}
-.bars .bar--out-of-range {
-  opacity: 0.3;
-  transition: opacity 0.3s;
-}
+.bar { margin: 0 2px; }
+
+/* In / out of the selected range */
+.bars .bar--in-range     { opacity: 1; }
+.bars .bar--out-of-range { opacity: var(--tc-out-opacity); }

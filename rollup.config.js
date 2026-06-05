@@ -3,7 +3,7 @@ import resolve       from '@rollup/plugin-node-resolve';
 import commonjs      from '@rollup/plugin-commonjs';
 import postcss       from 'rollup-plugin-postcss';
 import postcssImport from 'postcss-import';
-import { terser }    from 'rollup-plugin-terser';
+import terser        from '@rollup/plugin-terser';
 
 export default {
   input: 'src/js/index.js',

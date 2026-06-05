@@ -1,91 +1,119 @@
 import '../css/index.css';
-import { drawBars } from './bars.js';
-import { makeDraggable } from './drag.js';
 import { initChart } from './init.js';
-import { updateThresholds } from './thresholds.js';
+import { drawBars } from './bars.js';
+import { layoutThresholds, averageInRange } from './thresholds.js';
+import { makeInteractive } from './drag.js';
+
+const DEFAULTS = {
+  data: [],
+  initialMin: 20,
+  initialMax: 80,
+  showAverage: false,
+  minLabelPosition: 'bottom',
+  maxLabelPosition: 'bottom',
+  avgLabelPosition: 'top',
+  spacing: 2,            // minimum gap (in %) kept between the min and max handles
+  valueDomain: null,     // [lo, hi] for bar-height mapping; auto-derived when null
+  formatLabel: (v) => Math.round(v),
+};
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+const applyLabelPosition = (lineEl, labelPos) => {
+  const label = lineEl.querySelector('.value-label');
+  if (label) {
+    label.classList.toggle('label-top', labelPos === 'top');
+    label.classList.toggle('label-bottom', labelPos === 'bottom');
+  }
+  // The knob sits opposite the label so the two never collide.
+  lineEl.classList.toggle('handle-top', labelPos === 'bottom');
+  lineEl.classList.toggle('handle-bottom', labelPos === 'top');
+};
 
 export const createThresholdChart = (selector, options = {}) => {
-	let {
-		data = [],
-		initialMin = 20,
-		initialMax = 80,
-		showAverage = false,
-		minLabelPosition = 'bottom',
-		maxLabelPosition = 'bottom',
-		avgLabelPosition = 'top'
-	} = options;
+  const cfg = { ...DEFAULTS, ...options };
 
-	const oElems = initChart(selector);
+  const state = {
+    data: Array.isArray(cfg.data) ? cfg.data : [],
+    min: clamp(cfg.initialMin, 0, 100),
+    max: clamp(cfg.initialMax, 0, 100),
+    showAverage: !!cfg.showAverage,
+    valueDomain: cfg.valueDomain,
+    formatLabel:
+      typeof cfg.formatLabel === 'function' ? cfg.formatLabel : DEFAULTS.formatLabel,
+  };
+  // Enforce ordering at init too (the original only did this while dragging).
+  if (state.max < state.min + cfg.spacing) {
+    state.max = clamp(state.min + cfg.spacing, 0, 100);
+  }
 
-	const applyPositions = (lineEl, labelPos) => {
-		const label = lineEl.querySelector('.value-label');
-		if (label) {
-			label.classList.toggle('label-top', labelPos === 'top');
-			label.classList.toggle('label-bottom', labelPos === 'bottom');
-		}
-		lineEl.classList.toggle('handle-top', labelPos === 'bottom');
-		lineEl.classList.toggle('handle-bottom', labelPos === 'top');
-	};
+  const el = initChart(selector);
 
-	applyPositions(oElems.minLine, minLabelPosition);
-	applyPositions(oElems.maxLine, maxLabelPosition);
-	applyPositions(oElems.avgLine, avgLabelPosition);
+  applyLabelPosition(el.minLine, cfg.minLabelPosition);
+  applyLabelPosition(el.maxLine, cfg.maxLabelPosition);
+  applyLabelPosition(el.avgLine, cfg.avgLabelPosition);
 
-	const spacing = 2;
-	makeDraggable(oElems.minLine, oElems.chart, (pct) => {
-		initialMin = Math.min(pct, initialMax - spacing);
-		render();
-		options.onMinChange && options.onMinChange(initialMin);
-		options.onThresholdChange && options.onThresholdChange({ min: initialMin, max: initialMax, avg: (initialMin + initialMax) / 2 });
-	});
-	makeDraggable(oElems.maxLine, oElems.chart, (pct) => {
-		initialMax = Math.max(pct, initialMin + spacing);
-		render();
-		options.onMaxChange && options.onMaxChange(initialMax);
-		options.onThresholdChange && options.onThresholdChange({ min: initialMin, max: initialMax, avg: (initialMin + initialMax) / 2 });
-	});
+  // --- rendering split -----------------------------------------------------
+  // drawBars: heavy, rebuilds the DOM -> only on init / resize / setData.
+  // layout:   cheap, moves lines + toggles classes -> on every change.
+  const renderBars = () => drawBars(el, state.data, state.valueDomain);
+  const layout = () => layoutThresholds(el, state);
 
-	function highlightBars(barsEl, minPct, maxPct) {
-		const bars  = Array.from(barsEl.children);
-		const count = bars.length;
-		// on ne dépasse pas la barre max grâce au floor()
-		const startIdx = Math.floor((minPct / 100) * count);
-		const   endIdx = Math.floor((maxPct / 100) * count);
+  const getState = () => ({
+    min: state.min,
+    max: state.max,
+    average: state.showAverage ? averageInRange(state.data, state.min, state.max) : null,
+  });
 
-		bars.forEach((bar, i) => {
-			if (i >= startIdx && i <= endIdx) {
-				bar.classList.add('bar--in-range');
-				bar.classList.remove('bar--out-of-range');
-			} else {
-				bar.classList.add('bar--out-of-range');
-				bar.classList.remove('bar--in-range');
-			}
-		});
-	}
+  // Single commit path shared by drag, keyboard AND the programmatic API,
+  // so clamping, the min/max gap and the callbacks behave identically.
+  const commitMin = (pct) => {
+    state.min = clamp(Math.min(pct, state.max - cfg.spacing), 0, 100);
+    layout();
+    options.onMinChange && options.onMinChange(state.min);
+    options.onThresholdChange && options.onThresholdChange(getState());
+  };
+  const commitMax = (pct) => {
+    state.max = clamp(Math.max(pct, state.min + cfg.spacing), 0, 100);
+    layout();
+    options.onMaxChange && options.onMaxChange(state.max);
+    options.onThresholdChange && options.onThresholdChange(getState());
+  };
 
-	// Re-render on resize for responsiveness
-	let resizeTimeout;
-	const onResize = () => {
-		clearTimeout(resizeTimeout);
-		resizeTimeout = setTimeout(render, 100);
-	};
-	window.addEventListener('resize', onResize);
+  const teardownMin = makeInteractive(el.minLine, el.chart, commitMin);
+  const teardownMax = makeInteractive(el.maxLine, el.chart, commitMax);
 
-	const render = () => {
-		drawBars(oElems, data);
-		updateThresholds(oElems, initialMin, initialMax, showAverage);
-		highlightBars(oElems.barsEl, initialMin, initialMax);
-	};
+  // Re-render bars on resize (debounced) since width drives bar geometry.
+  let resizeTimer;
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { renderBars(); layout(); }, 100);
+  };
+  window.addEventListener('resize', onResize);
 
-	render();
+  renderBars();
+  layout();
 
-	return {
-		setMin: (v) => { initialMin = v; render(); },
-		setMax: (v) => { initialMax = v; render(); },
-		toggleAverage: (b) => { showAverage = b; render(); },
-		setMinLabelPos: (p) => applyPositions(oElems.minLine, p),
-		setMaxLabelPos: (p) => applyPositions(oElems.maxLine, p),
-		setAvgLabelPos: (p) => applyPositions(oElems.avgLine, p),
-		destroy: () => { window.removeEventListener('resize', onResize); }
-	};
+  return {
+    setMin: (v) => commitMin(Number(v)),
+    setMax: (v) => commitMax(Number(v)),
+    toggleAverage: (b) => { state.showAverage = !!b; layout(); },
+    setMinLabelPos: (p) => applyLabelPosition(el.minLine, p),
+    setMaxLabelPos: (p) => applyLabelPosition(el.maxLine, p),
+    setAvgLabelPos: (p) => applyLabelPosition(el.avgLine, p),
+    setData: (d) => { state.data = Array.isArray(d) ? d : []; renderBars(); layout(); },
+    getMin: () => state.min,
+    getMax: () => state.max,
+    getAverage: () =>
+      state.showAverage ? averageInRange(state.data, state.min, state.max) : null,
+    getState,
+    destroy: () => {
+      window.removeEventListener('resize', onResize);
+      clearTimeout(resizeTimer);
+      teardownMin();
+      teardownMax();
+      el.chart.innerHTML = '';
+      el.chart.classList.remove('chart-container');
+    },
+  };
 };

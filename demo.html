@@ -2,35 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Threshold Chart Demo</title>
-  <style>
-    html, body { margin:0; height:100% }
-    body {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background:#111;
-    }
-    #demo {
-      display: flex;
-      align-items: center;
-    }
-  </style>
   <link rel="stylesheet" href="./dist/style.css">
+  <style>
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      display: flex; flex-direction: column; gap: 2.5rem;
+      justify-content: center; align-items: center;
+      min-height: 100vh; background: #111; color: #eee;
+      font-family: system-ui, sans-serif;
+    }
+    /* The component is responsive; here we give it a fixed demo size and
+       a custom theme purely via the exposed CSS variables. */
+    #demo {
+      --tc-width: 600px;
+      --tc-height: 120px;
+      --tc-bar-color: #3b82f6;
+      --tc-threshold-color: #f1f5f9;
+      --tc-avg-color: #f59e0b;
+      --tc-label-size: 18px;
+    }
+    .controls { display: flex; gap: .75rem; }
+    button {
+      background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+      border-radius: 8px; padding: .5rem .9rem; cursor: pointer; font: inherit;
+    }
+    button:hover { background: #334155; }
+    code { color: #f59e0b; }
+  </style>
 </head>
 <body>
   <div id="demo"></div>
+
+  <div class="controls">
+    <button id="toggle">Toggle average</button>
+    <button id="randomize">Randomize data</button>
+  </div>
+  <p>min: <code id="vmin"></code> · max: <code id="vmax"></code> · avg: <code id="vavg"></code></p>
+
   <script src="./dist/index.umd.js"></script>
   <script>
+    const randomData = () => Array.from({ length: 60 }, () => Math.random() * 50);
+
+    const out = { min: document.getElementById('vmin'),
+                  max: document.getElementById('vmax'),
+                  avg: document.getElementById('vavg') };
+    const print = (s) => {
+      out.min.textContent = Math.round(s.min);
+      out.max.textContent = Math.round(s.max);
+      out.avg.textContent = s.average == null ? '—' : Math.round(s.average);
+    };
+
     const chart = ThresholdChart.createThresholdChart('#demo', {
-      data: Array.from({ length: 60 }, () => Math.random() * 50),
+      data: randomData(),
       initialMin: 30,
       initialMax: 70,
       showAverage: true,
-      minLabelPosition: 'bottom',
-      maxLabelPosition: 'bottom',
-      avgLabelPosition: 'top'
+      onThresholdChange: print,
     });
+    print(chart.getState());
+
+    let avgOn = true;
+    document.getElementById('toggle').onclick = () => {
+      avgOn = !avgOn; chart.toggleAverage(avgOn); print(chart.getState());
+    };
+    document.getElementById('randomize').onclick = () => {
+      chart.setData(randomData()); print(chart.getState());
+    };
   </script>
 </body>
 </html>

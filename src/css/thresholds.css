@@ -1,192 +1,81 @@
-/*==================================================
-			Draggable Threshold Handle
-==================================================*/
+/* ==========================================================================
+   Threshold handle
+   - min / max are draggable + keyboard-operable
+   - avg is informational (computed), so it is not interactive
+   All offsets are relative to the container height, so the component scales
+   with --tc-height instead of relying on hard-coded pixel heights.
+   ========================================================================== */
 .threshold {
 	position: absolute;
-	top: -20px;        /* extend drag area above */
-	bottom: -20px;     /* extend drag area below */
+	top:    calc(var(--tc-drag-pad) * -1); /* extend the drag area above */
+	bottom: calc(var(--tc-drag-pad) * -1); /* and below the chart        */
 	left: 0;
-	width: 30px;       /* clickable width */
-	cursor: ew-resize; /* horizontal resize cursor */
-	pointer-events: auto;
+	width: var(--tc-handle-width);
 	transform: translateX(-50%);
-	z-index: 9999;     /* always on top */
+	cursor: ew-resize;
+	pointer-events: auto;
+	z-index: 10;
+	touch-action: none;                    /* enable pointer-drag on touch */
 }
 
-/*==================================================
-		Vertical Dashed Line (Connector)
-==================================================*/
+.threshold:focus-visible {
+	outline: 2px solid var(--tc-threshold-color);
+	outline-offset: 2px;
+}
+
+/* avg is derived from min/max — never draggable */
+.threshold.avg {
+	cursor: default;
+	pointer-events: none;
+}
+
+/* ---- Vertical dashed connector: overlays the chart area exactly ---------- */
 .threshold::after {
 	content: "";
 	position: absolute;
 	left: 50%;
-	top: 0;
-	bottom: 0;
-	width: 1px;
-	border-left: 2px dashed #fff;
+	top:    var(--tc-drag-pad);
+	bottom: var(--tc-drag-pad);
+	width: 0;
+	border-left: 2px dashed var(--tc-threshold-color);
 	transform: translateX(-50%);
 }
+.threshold.avg::after { border-left-color: var(--tc-avg-color); }
 
-/*==================================================
-			Circular Handle “Dot” (Knob)
-==================================================*/
+/* ---- Circular knob ------------------------------------------------------- */
 .threshold::before {
 	content: "";
 	position: absolute;
 	left: 50%;
-	top: 50%;
-	width: 13px;
-	height: 13px;
-	background-color: #fff;
+	width: var(--tc-handle-size);
+	height: var(--tc-handle-size);
+	background-color: var(--tc-handle-color);
 	border-radius: 50%;
 	transform: translate(-50%, -50%);
+	top: calc(100% - var(--tc-drag-pad)); /* default: knob at the chart bottom */
 }
+.threshold.avg::before { background-color: var(--tc-avg-color); }
 
-/*==================================================
-		Generic Value Label Styling
-==================================================*/
+/* When the handle is at the top, the knob moves to the chart top */
+.threshold.handle-top::before { top: var(--tc-drag-pad); }
+
+/* ---- Value label --------------------------------------------------------- */
 .value-label {
 	position: absolute;
 	left: 50%;
+	transform: translateX(-50%);
 	white-space: nowrap;
 	pointer-events: none;
-	font-size: 22px;
-	color: #fff;
-	transform: translateX(-50%);
+	color: var(--tc-label-color);
+	font-size: var(--tc-label-size);
 }
 
-/*==================================================
-		Default Label Position Modifiers
-==================================================*/
-/* Average line: label above the dot */
-.threshold.avg .value-label {
-	bottom: 100%;
-	transform: translate(-50%, 10px);
-}
-
-/* Explicit “label-top”: always above */
+/* Explicit positions (applied via JS from *LabelPosition options) */
 .value-label.label-top {
-	bottom: 100%;
+	bottom: calc(100% - var(--tc-drag-pad) + 6px); /* just above the chart top */
 	top: auto;
-	transform: translate(-50%, -12px);
 }
-
-/* Explicit “label-bottom”: always below */
 .value-label.label-bottom {
-	top: 100%;
+	top: calc(100% - var(--tc-drag-pad) + 6px);    /* just below the chart bottom */
 	bottom: auto;
-	transform: translate(-50%, 12px);
-}
-
-/* Min & Max: default label well below */
-.threshold.min .value-label,
-.threshold.max .value-label {
-	top: 100%;
-	transform: translate(-50%, 40px);
-}
-
-/*==================================================
-		Position Handle “Dot” for Min & Max
-==================================================*/
-/* Place the dot at the bottom for min & max */
-.threshold.min::before,
-.threshold.max::before {
-	top: auto;
-	bottom: 0;
-	transform: translate(-50%, 50%);
-}
-
-/*==================================================
-	Overrides for Min/Max when Handle is Top
-==================================================*/
-.threshold.max.handle-top,
-.threshold.min.handle-top {
-	/* dot moves to top */
-	&::before {
-		top: 0;
-		bottom: auto;
-		transform: translate(-50%, -50%);
-	}
-	/* dashed line fixed height */
-	&::after {
-		height: 170px;
-		top: 0;
-	}
-	/* label moved below */
-	& .value-label {
-		top: 100%;
-		transform: translate(-50%, 40px);
-	}
-}
-
-/*==================================================
-	Overrides for Min/Max when Handle is Bottom
-==================================================*/
-.threshold.max.handle-bottom,
-.threshold.min.handle-bottom {
-	/* dot moves below with margin */
-	&::before {
-		top: auto;
-		bottom: -50px;
-		transform: translate(-50%, 50%);
-	}
-	/* dashed line partial height */
-	&::after {
-		height: 145px;
-		top: 25%;
-	}
-	/* label placed just above */
-	& .value-label {
-		top: 0%;
-		transform: translate(-50%, -10px);
-	}
-}
-
-/*==================================================
-	Overrides for Average when Handle is Top
-==================================================*/
-.threshold.avg::before {
-	/* default avg dot at top */
-	top: 0;
-	bottom: auto;
-	transform: translate(-50%, -50%);
-}
-
-.threshold.avg.handle-top {
-	/* dot at top */
-	&::before {
-		top: 0;
-		bottom: auto;
-		transform: translate(-50%, -50%);
-	}
-	/* dashed line shorter */
-	&::after {
-		height: 140px;
-	}
-	/* label shifted downward */
-	& .value-label {
-		transform: translate(-50%, 38px);
-	}
-}
-
-/*==================================================
-	Overrides for Average when Handle is Bottom
-==================================================*/
-.threshold.avg.handle-bottom {
-	/* dot moves below */
-	&::before {
-		top: auto;
-		bottom: -50px;
-		transform: translate(-50%, 50%);
-	}
-	/* dashed line partial height */
-	&::after {
-		height: 120px;
-		top: 43%;
-	}
-	/* label placed above */
-	& .value-label {
-		bottom: 100%;
-		transform: translate(-50%, 10px);
-	}
 }
