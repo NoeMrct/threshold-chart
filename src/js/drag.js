@@ -1,31 +1,68 @@
-export const makeDraggable = (el, chart, onChange) => {
-	let isDragging = false;
+/**
+ * Make a threshold handle interactive: drag via Pointer Events (mouse + touch +
+ * pen, unified) and operable by keyboard for accessibility. Pointer capture
+ * keeps tracking outside the element without any document-level listeners, so
+ * teardown is exact and leak-free.
+ *
+ * @returns {() => void} teardown that removes every listener it added.
+ */
+export const makeInteractive = (el, chart, onChange, opts = {}) => {
+  const step    = opts.step ?? 1;
+  const bigStep = opts.bigStep ?? 10;
+  let pointerId = null;
 
-	const getPct = (clientX) => {
-		const { left, width } = chart.getBoundingClientRect();
-		let pct = ((clientX - left) / width) * 100;
-		return Math.max(0, Math.min(100, pct));
-	};
+  const pctFromClientX = (clientX) => {
+    const { left, width } = chart.getBoundingClientRect();
+    if (!width) return 0;
+    const pct = ((clientX - left) / width) * 100;
+    return Math.max(0, Math.min(100, pct));
+  };
 
-	const start = (x) => {
-		isDragging = true;
-		onChange(getPct(x));
-	};
-	const move = (x) => {
-		if (!isDragging) return;
-		onChange(getPct(x));
-	};
-	const end = () => {
-		isDragging = false;
-	};
+  const onPointerDown = (e) => {
+    e.preventDefault();
+    pointerId = e.pointerId;
+    el.setPointerCapture && el.setPointerCapture(pointerId);
+    onChange(pctFromClientX(e.clientX));
+  };
+  const onPointerMove = (e) => {
+    if (pointerId === null || e.pointerId !== pointerId) return;
+    onChange(pctFromClientX(e.clientX));
+  };
+  const onPointerUp = (e) => {
+    if (pointerId === null || e.pointerId !== pointerId) return;
+    el.releasePointerCapture && el.releasePointerCapture(pointerId);
+    pointerId = null;
+  };
 
-	// Mouse events
-	el.addEventListener('mousedown', (e) => { e.preventDefault(); start(e.clientX); });
-	document.addEventListener('mousemove', (e) => move(e.clientX));
-	document.addEventListener('mouseup', () => end());
+  const onKeyDown = (e) => {
+    const current = Number(el.getAttribute('aria-valuenow')) || 0;
+    let next = current;
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':  next = current - (e.shiftKey ? bigStep : step); break;
+      case 'ArrowRight':
+      case 'ArrowUp':    next = current + (e.shiftKey ? bigStep : step); break;
+      case 'PageDown':   next = current - bigStep; break;
+      case 'PageUp':     next = current + bigStep; break;
+      case 'Home':       next = 0; break;
+      case 'End':        next = 100; break;
+      default: return;
+    }
+    e.preventDefault();
+    onChange(Math.max(0, Math.min(100, next)));
+  };
 
-	// Touch events
-	el.addEventListener('touchstart', (e) => { e.preventDefault(); start(e.touches[0].clientX); });
-	document.addEventListener('touchmove', (e) => { e.preventDefault(); move(e.touches[0].clientX); });
-	document.addEventListener('touchend', () => end());
+  el.addEventListener('pointerdown', onPointerDown);
+  el.addEventListener('pointermove', onPointerMove);
+  el.addEventListener('pointerup', onPointerUp);
+  el.addEventListener('pointercancel', onPointerUp);
+  el.addEventListener('keydown', onKeyDown);
+
+  return () => {
+    el.removeEventListener('pointerdown', onPointerDown);
+    el.removeEventListener('pointermove', onPointerMove);
+    el.removeEventListener('pointerup', onPointerUp);
+    el.removeEventListener('pointercancel', onPointerUp);
+    el.removeEventListener('keydown', onKeyDown);
+  };
 };

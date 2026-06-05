@@ -1,7 +1,29 @@
-/* Container for the bar chart */
+/* ==========================================================================
+   Container for the bar chart.
+   Everything visual is themeable through these CSS custom properties — set
+   them on the host element (or any ancestor) to restyle without overrides.
+   ========================================================================== */
 .chart-container {
+	/* layout */
+	--tc-width:        100%;   /* responsive by default; set e.g. 600px for fixed */
+	--tc-height:       100px;
+	--tc-drag-pad:     20px;   /* invisible drag area above & below the chart    */
+	--tc-handle-width: 30px;   /* clickable width of a threshold                 */
+
+	/* colours & typography */
+	--tc-bar-color:       #444;
+	--tc-out-opacity:     0.3;
+	--tc-threshold-color: #fff;
+	--tc-handle-color:    #fff;
+	--tc-handle-size:     13px;
+	--tc-avg-color:       var(--tc-threshold-color);
+	--tc-label-color:     #fff;
+	--tc-label-size:      22px;
+	--tc-transition:      0.3s;
+
 	position: relative;
-	width: 600px;
-	height: 100px;
+	box-sizing: border-box;
+	width: var(--tc-width);
+	height: var(--tc-height);
 	overflow: visible;
 }
